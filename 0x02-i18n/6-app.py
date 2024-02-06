@@ -41,16 +41,22 @@ def before_request():
 @babel.localeselector
 def get_locale():
     '''Gets the locale language'''
-    default_locale = request.args.get('locale')
-    if default_locale:
-        return default_locale
+    url_locale = request.args.get('locale')
+    user_locale = g.user['locale']
+    header_locale = request.headers.get('locale')
+    if url_locale in app.config['LANGUAGES']:
+        return url_locale
+    if user_locale in app.config['LANGUAGES']:
+        return user_locale
+    if header_locale in app.config['LANGUAGES']:
+        return header_locale
     return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 
 @app.route('/')
 def index():
     '''Basic index page'''
-    return render_template('5-index.html', user=g.user)
+    return render_template('6-index.html', user=g.user)
 
 
 if __name__ == "__main__":
