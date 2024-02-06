@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 '''Basic app with only single route'''
 from flask import Flask, render_template, request, g
-from flask_babel import Babel
+from flask_babel import Babel, format_datetime
+import pytz
 
 
 class Config:
@@ -41,7 +42,7 @@ def before_request():
 @babel.localeselector
 def get_locale():
     '''Gets the locale language'''
-    url_locale = request.args.get('locale', None)
+    url_locale = request.args.get('locale')
     if url_locale and url_locale in app.config['LANGUAGES']:
         return url_locale
 
@@ -56,10 +57,31 @@ def get_locale():
     return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 
+@babel.timezoneselector
+def get_timezone():
+    '''Gets the timezone'''
+    url_timezone = request.args.get('timezone', None)
+    if url_timezone:
+        try:
+            return pytz.timezone(url_timezone)
+        except pytz.exceptions.UnknownTimeZoneError:
+            pass
+    if g.user:
+        user_timezone = g.user['timezone']
+        if user_timezone:
+            try:
+                return pytz.timezone(user_timezone)
+            except pytz.exceptions.UnknownTimeZoneError:
+                pass
+
+    return pytz.timezone(app.config['BABEL_DEFAULT_TIMEZONE'])
+
+
 @app.route('/')
 def index():
     '''Basic index page'''
-    return render_template('6-index.html', user=g.user)
+    g.time = format_datetime()
+    return render_template('index.html', user=g.user)
 
 
 if __name__ == "__main__":
