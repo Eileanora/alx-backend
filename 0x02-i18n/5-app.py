@@ -50,7 +50,7 @@ def get_locale():
 @app.route('/')
 def index():
     '''Basic index page'''
-    return render_template('5-index.html')
+    return render_template('5-index.html', user=g.user)
 
 
 if __name__ == "__main__":
