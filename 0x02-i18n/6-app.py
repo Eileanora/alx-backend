@@ -42,14 +42,17 @@ def before_request():
 def get_locale():
     '''Gets the locale language'''
     url_locale = request.args.get('locale')
-    user_locale = g.user['locale']
-    header_locale = request.headers.get('locale')
-    if url_locale in app.config['LANGUAGES']:
+    if url_locale and url_locale in app.config['LANGUAGES']:
         return url_locale
-    if user_locale in app.config['LANGUAGES']:
+
+    user_locale = g.user['locale']
+    if user_locale and user_locale in app.config['LANGUAGES']:
         return user_locale
-    if header_locale in app.config['LANGUAGES']:
+
+    header_locale = request.headers.get('locale', None)
+    if header_locale and header_locale in app.config['LANGUAGES']:
         return header_locale
+
     return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 
