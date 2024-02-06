@@ -2,6 +2,7 @@
 '''Basic app with only single route'''
 from flask import Flask, render_template, request, g
 from flask_babel import Babel
+import pytz
 
 
 class Config:
@@ -42,33 +43,44 @@ def before_request():
 def get_locale():
     '''Gets the locale language'''
     url_locale = request.args.get('locale')
-    user_locale = g.user['locale']
-    header_locale = request.headers.get('locale')
-    if url_locale in app.config['LANGUAGES']:
+    if url_locale and url_locale in app.config['LANGUAGES']:
         return url_locale
-    if user_locale in app.config['LANGUAGES']:
+
+    user_locale = g.user['locale']
+    if user_locale and user_locale in app.config['LANGUAGES']:
         return user_locale
-    if header_locale in app.config['LANGUAGES']:
+
+    header_locale = request.headers.get('locale', None)
+    if header_locale and header_locale in app.config['LANGUAGES']:
         return header_locale
+
     return request.accept_languages.best_match(app.config['LANGUAGES'])
 
 
 @babel.timezoneselector
 def get_timezone():
     '''Gets the timezone'''
-    url_timezone = request.args.get('timezone')
-    user_timezone = g.user['timezone']
-    if url_timezone in app.config['BABEL_TIMEZONES']:
-        return url_timezone
-    if user_timezone in app.config['BABEL_TIMEZONES']:
-        return user_timezone
-    return app.config['BABEL_DEFAULT_TIMEZONE']
+    url_timezone = request.args.get('timezone', None)
+    if url_timezone:
+        try:
+            return pytz.timezone(url_timezone)
+        except pytz.exceptions.UnknownTimeZoneError:
+            pass
+    if g.user:
+        user_timezone = g.user['timezone']
+        if user_timezone:
+            try:
+                return pytz.timezone(user_timezone)
+            except pytz.exceptions.UnknownTimeZoneError:
+                pass
+
+    return pytz.timezone(app.config['BABEL_DEFAULT_TIMEZONE'])
 
 
 @app.route('/')
 def index():
     '''Basic index page'''
-    return render_template('6-index.html', user=g.user)
+    return render_template('7-index.html', user=g.user)
 
 
 if __name__ == "__main__":
