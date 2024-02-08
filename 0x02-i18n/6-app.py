@@ -45,9 +45,8 @@ def get_locale():
     if url_locale and url_locale in app.config['LANGUAGES']:
         return url_locale
 
-    user_locale = g.user['locale']
-    if user_locale and user_locale in app.config['LANGUAGES']:
-        return user_locale
+    if g.user and g.user['locale'] in app.config['LANGUAGES']:
+        return g.user['locale']
 
     header_locale = request.headers.get('locale', None)
     if header_locale and header_locale in app.config['LANGUAGES']:
